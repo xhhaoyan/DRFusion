@@ -1,0 +1,71 @@
+# Stage-1 VAE training configuration.
+
+model:
+  base_learning_rate: 1.0e-05
+  target: ldm.models.autoencoder.VQModel
+  params:
+    embed_dim: 3
+    n_embed: 8192
+    monitor: val/rec_loss
+
+    ddconfig:
+      double_z: false
+      z_channels: 3
+      resolution: 256
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult:
+        - 1
+        - 2
+        - 4
+      num_res_blocks: 2
+      attn_resolutions: []
+      dropout: 0.0
+
+    lossconfig:
+      target: taming.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
+      params:
+        disc_conditional: false
+        disc_in_channels: 3
+        disc_start: 0
+        disc_weight: 0.75
+        codebook_weight: 1.0
+        perceptual_weight: 1.0
+
+data:
+  target: train_stage1.DataModuleFromConfig
+  params:
+    batch_size: 8
+    num_workers: 8
+    wrap: true
+
+    train:
+      target: data.custom.CustomTrain
+      params:
+        training_images_list_file: data/visible_train_paths.txt
+        size: 256
+
+    validation:
+      target: data.custom.CustomTest
+      params:
+        test_images_list_file: data/visible_val_paths.txt
+        size: 256
+
+lightning:
+  trainer:
+    max_epochs: 50
+    gpus: "0,"
+    accumulate_grad_batches: 2
+    precision: 32
+    gradient_clip_val: 1.0
+
+  modelcheckpoint:
+    params:
+      every_n_epochs: 2
+      save_top_k: 5
+      save_last: true
+      monitor: val/rec_loss
+      mode: min
+      filename: 'epoch={epoch:03d}-val_loss={val/rec_loss:.4f}'
+      verbose: true

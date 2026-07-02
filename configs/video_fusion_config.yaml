@@ -1,0 +1,80 @@
+# DRFusion inference configuration.
+# Put the released checkpoints under checkpoints/ or override them from CLI.
+
+device: 'cuda:0'
+
+data:
+  n_frames: 16
+  frame_skip: 1
+  img_size: 256
+
+autoencoder:
+  target: ldm.models.autoencoder.VQModel
+  ckpt_path: checkpoints/vae_stage1.ckpt
+  use_fp16: true
+  params:
+    embed_dim: 3
+    n_embed: 8192
+    ddconfig:
+      double_z: false
+      z_channels: 3
+      resolution: 256
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult:
+        - 1
+        - 2
+        - 4
+      num_res_blocks: 2
+      attn_resolutions: []
+      dropout: 0.0
+      padding_mode: zeros
+    lossconfig:
+      target: taming.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
+      params:
+        disc_conditional: false
+        disc_in_channels: 3
+        disc_start: 0
+        disc_weight: 0.75
+        codebook_weight: 1.0
+
+model:
+  pretrained_path: checkpoints/dit_backbone.ckpt
+  dit:
+    input_channels: 3
+    hidden_size: 512
+    depth: 8
+    num_heads: 8
+    mlp_ratio: 4.0
+    patch_size: 16
+    img_size: 64
+    max_frames: 16
+
+adapter:
+  enabled: true
+  ckpt_path: checkpoints/adapter_stage2.pt
+  use_vi_cond: false
+
+diffusion:
+  timesteps: 1000
+  sampling_timesteps: 50
+  logsnr_min: -15.0
+  logsnr_max: 15.0
+  shift: 1.0
+  precond_scale: 1.0
+  sigmoid_bias: 0.0
+
+sampling:
+  context_frames: 2
+  eta: 0.0
+  history_guidance:
+    type: stabilized_vanilla
+    guidance_scale: 2.0
+    stabilization_level: 0.02
+
+fusion:
+  lamb: 0.5
+  rho: 0.01
+  em_every_n_steps: 5
+  temporal_smooth_alpha: 0.2

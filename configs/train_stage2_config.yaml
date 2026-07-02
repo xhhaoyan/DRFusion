@@ -1,0 +1,61 @@
+# Stage-2 ConditionAdapter training configuration.
+
+device: 'cuda'
+
+autoencoder:
+  target: taming.models.vqgan.VQModel
+  ckpt_path: checkpoints/vae_stage1.ckpt
+  params:
+    embed_dim: 3
+    n_embed: 8192
+    ddconfig:
+      double_z: false
+      z_channels: 3
+      resolution: 256
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult: [1, 2, 4]
+      num_res_blocks: 2
+      attn_resolutions: []
+      dropout: 0.0
+    lossconfig:
+      target: torch.nn.Identity
+
+model:
+  dit:
+    input_channels: 3
+    hidden_size: 512
+    depth: 8
+    num_heads: 8
+    mlp_ratio: 4.0
+    patch_size: 16
+    img_size: 64
+    max_frames: 16
+    ckpt_path: checkpoints/dit_backbone.ckpt
+
+diffusion:
+  timesteps: 1000
+  sampling_timesteps: 50
+  logsnr_min: -15.0
+  logsnr_max: 15.0
+  shift: 1.0
+  precond_scale: 1.0
+  sigmoid_bias: 0.0
+
+data:
+  train_root: datasets/train_videos
+  train_list_file: data/video_train_paths.txt
+  val_list_file: data/video_val_paths.txt
+  n_frames: 16
+  frame_skip: 1
+  img_size: 256
+  batch_size: 2
+  num_workers: 4
+
+training:
+  num_epochs: 100
+  learning_rate: 5.0e-4
+  weight_decay: 0.01
+  save_interval: 10
+  output_dir: outputs/adapter_stage2
