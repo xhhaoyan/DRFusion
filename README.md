@@ -11,7 +11,7 @@ Code URL in the paper: `https://github.com/xhhaoyan/DRFusion`
 
 DRFusion formulates infrared-visible video fusion as history-conditioned motion generation. The method combines a pretrained video diffusion backbone with a lightweight stage-2 ConditionAdapter, Stabilized History Guidance, Soft Temporal Anchoring, and EM-based latent refinement to improve fusion quality and temporal stability.
 
-The public inference entry in this repository is `test.py`. It always loads the stage-2 adapter checkpoint; the older DiT-only test path is intentionally not used.
+The public inference entry in this repository is `test.py`.
 
 ## Visual Overview
 
@@ -44,7 +44,7 @@ pip install -r requirements.txt
 
 ## Model Zoo
 
-Download the pretrained weights and place them under `checkpoints/`. The VAE and adapter links can be replaced with the final release links when ready; the 3D-DiT backbone points to the upstream DFoT checkpoint.
+Download the pretrained weights and place them under `checkpoints/`.
 
 | Component | File | Description | Download |
 | --- | --- | --- | --- |
@@ -90,8 +90,6 @@ datasets/VTMOT/
       000001.png
       000002.png
 ```
-
-You may also pass a single folder that directly contains `infrared/` and `visible/`.
 
 ## Inference
 
